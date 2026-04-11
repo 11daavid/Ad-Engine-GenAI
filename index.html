@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Ad Generator Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: row-reverse; margin: 0; height: 100vh; background: linear-gradient(135deg, #22201d 0%, #a3a3a3 100%); no-repeat center center fixed; background-size: cover; }
+        #sidebar { width: 320px; background: #34363a; color: white; padding: 25px; overflow-y: auto; border-right: 1px solid #ddd; }
+        #main { flex: 1; padding: 40px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 650px; margin-bottom: 20px; }
+        h2 { margin-top: 0; color: #1c1e21; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 6px; border: 1px solid #ccd0d5; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; margin-top: 10px; border-radius: 6px; border: none; background: #0084ff; color: white; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #0073e6; }A
+        .history-item { background: #3a3b3c; margin-bottom: 10px; padding: 12px; border-radius: 8px; font-size: 0.9em; }
+        .status-badge { font-size: 0.8em; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .success { background: #2ecc71; color: white; }
+        .fail { background: #e74c3c; color: white; }
+        .ad-result { text-align: left; }
+        img { max-width: 100%; border-radius: 8px; margin-top: 15px; border: 1px solid #ddd; }
+        .hook-text { color: red; font-style: italic; display: block; margin: 10px 0; }
+        .body-text { color: purple; display: block; margin: 15px 0; line-height: 1.6; }
+        .cta-text { color: green; font-weight: bold; display: block; margin-top: 10px; }
+        .img-container { width: 100%; border-radius: 8px; margin-top: 15px; overflow: hidden; cursor: zoom-in; }
+        .img-container img { width: 100%; transition: transform 0.3s ease; display: block; }
+        .img-container.zoomed img { transform: scale(2); cursor: zoom-out; }
+        .download-btn { background: #2c3150; }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <h2 style="color: rgb(66, 219, 156);">Istoric Generări Reclame</h2>
+    <div id="history-list">Se încarcă istoricul...</div>
+</div>
+
+<div id="main">
+    <div class="card">
+        <h2>AI Ad Engine 🚀</h2>
+        <p style="color: #606770;">Introdu cât mai multe detalii pentru a genera o reclamă profesională.</p>
+        <input type="text" id="produs" placeholder="Nume produs (ex: Rolex Submariner)">
+        <input type="text" id="tinta" placeholder="Public țintă (ex: pasionați de lux)">
+        <button onclick="genereaza()">Generează Reclama</button>
+    </div>
+
+    <div id="rezultat"></div>
+</div>
+
+<script>
+    async function incarcaIstoric() {
+        try {
+            const res = await fetch('/history');
+            const date = await res.json();
+            const lista = document.getElementById('history-list');
+            if (date.length === 0) {
+                lista.innerHTML = "<p style='color: #8a8d91;'>Nicio reclamă în istoric.</p>";
+                return;
+            }
+            lista.innerHTML = date.reverse().map(item => `
+                <div class="history-item">
+                    <strong>${item.produs}</strong><br>
+                    <small>${item.timestamp}</small><br>
+                    <span class="status-badge ${item.status === 'Succes' ? 'success' : 'fail'}">${item.status}</span>
+                </div>
+            `).join('');
+        } catch (e) { console.error("Eroare la istoric:", e); }
+    }
+
+    async function genereaza() {
+        const produs = document.getElementById('produs').value;
+        const tinta = document.getElementById('tinta').value;
+        const rezDiv = document.getElementById('rezultat');
+        
+        if(!produs) { alert("Introdu un produs!"); return; }
+
+        rezDiv.innerHTML = "<div class='card'>⌛ Reclama ta e gata in 3,2,1....</div>";
+        
+        try {
+            const res = await fetch(`/generate-full-ad?produs=${encodeURIComponent(produs)}&public_tinta=${encodeURIComponent(tinta)}`);
+            const date = await res.json();
+            
+            rezDiv.innerHTML = `
+                <div class="card ad-result">
+                    <h3 style="color: #0084ff;">${date.title || 'Reclamă Generată'}</h3>
+                    
+                    <div class="hook-text">${date.hook || ''}</div>
+                    
+                    <div class="body-text">${date.description || ''}</div>
+                    
+                    <div class="cta-text">${date.cta || ''}</div>
+                    
+                    <div class="img-container" 
+                         onclick="this.classList.toggle('zoomed')" 
+                         onmouseleave="this.classList.remove('zoomed')">
+                        <img src="/static_outputs/final_ad_image.png?t=${new Date().getTime()}" alt="Ad Image">
+                    </div>
+
+                    <button class="download-btn" onclick="downloadImage()">📥 Descarcă Imaginea</button>
+                </div>
+            `;
+            incarcaIstoric();
+            function downloadImage() {
+    const link = document.createElement('a');
+    link.href = "/static_outputs/final_ad_image.png";
+    link.download = "reclama_ai.png";
+    link.click();
+}
+        } catch (e) {
+            rezDiv.innerHTML = "<div class='card' style='color: red;'>❌ A apărut o problemă, mai încercați odată....</div>";
+        }
+    }
+
+    // Încarcă istoricul la pornire
+    incarcaIstoric();
+</script>
+
+</body>
+</html>
