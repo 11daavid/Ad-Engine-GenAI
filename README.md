@@ -64,9 +64,11 @@ Start the FastAPI server:
 uvicorn main:app --reload
 
 
-Access the dashboard at: http://127.0.0.1:8000
+Once running locally, access the interfaces:
 
-Access the API Documentation at: http://127.0.0.1:8000/docs
+- **Dashboard:** `http://127.0.0.1:8000`
+- 
+- **Interactive Swagger Docs:** `http://127.0.0.1:8000/docs`
 
 
 📂 Project Structure
