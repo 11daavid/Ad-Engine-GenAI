@@ -66,9 +66,7 @@ uvicorn main:app --reload
 
 Once running locally, access the interfaces:
 
-- **Dashboard:** `http://127.0.0.1:8000`
-- 
-- **Interactive Swagger Docs:** `http://127.0.0.1:8000/docs`
+- **Dashboard:** (https://ad-engine-genai.onrender.com)
 
 
 📂 Project Structure
